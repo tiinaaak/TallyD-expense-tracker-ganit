@@ -19,7 +19,10 @@ function Sidebar({ onLogout }) {
       </ul>
 
       <button
-        onClick={onLogout}
+        onClick={() => {
+          console.log('Logout clicked');
+          onLogout();
+        }}
         style={{
           padding: '10px',
           backgroundColor: '#16233F',
