@@ -10,9 +10,21 @@ export const registerUser = (username, email, password) => {
   });
 };
 
-export const loginUser = (username, password) => {
+export const loginUser = (email, password) => {
   return axios.post(`${API_BASE_URL}/login/`, {
-    username,
+    email,
     password,
+  });
+};
+
+export const requestPasswordReset = (email) => {
+  return axios.post(`${API_BASE_URL}/password-reset/`, { email });
+};
+
+export const confirmPasswordReset = (uid, token, newPassword) => {
+  return axios.post(`${API_BASE_URL}/password-reset-confirm/`, {
+    uid,
+    token,
+    new_password: newPassword,
   });
 };

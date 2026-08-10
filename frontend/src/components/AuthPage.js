@@ -1,15 +1,39 @@
 import { useState } from 'react';
 import { registerUser, loginUser } from '../api/auth';
+import ForgotPassword from './ForgotPassword';
 import './Auth.css';
 
+function getPasswordStrength(password) {
+  if (!password) return { label: '', score: 0, hasMinLength: false, hasLetter: false, hasNumber: false, hasSpecial: false };
+
+  const hasMinLength = password.length >= 8;
+  const hasLetter = /[a-zA-Z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+  const meetsAll = hasMinLength && hasLetter && hasNumber && hasSpecial;
+
+  if (!hasMinLength) return { label: 'Weak', score: 1, hasMinLength, hasLetter, hasNumber, hasSpecial };
+  if (meetsAll) return { label: 'Strong', score: 4, hasMinLength, hasLetter, hasNumber, hasSpecial };
+  return { label: 'Medium', score: 2, hasMinLength, hasLetter, hasNumber, hasSpecial };
+}
+
 function AuthPage({ onLoginSuccess }) {
-  const [mode, setMode] = useState('login'); // 'login' or 'register'
+  const [mode, setMode] = useState('login');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  if (showForgotPassword) {
+    return <ForgotPassword onBackToLogin={() => setShowForgotPassword(false)} />;
+  }
+
+  const passwordStrength = getPasswordStrength(password);
 
   const switchMode = (newMode) => {
     setMode(newMode);
@@ -24,15 +48,37 @@ function AuthPage({ onLoginSuccess }) {
     e.preventDefault();
     setMessage('');
     setError('');
+
+    if (mode === 'register') {
+      if (!username.trim() || !email.trim() || !password.trim()) {
+        setError('Username, email, and password are all required.');
+        return;
+      }
+      if (passwordStrength.label === 'Weak') {
+        setError('Password must be at least 8 characters and include a letter, a number, and a special character.');
+        return;
+      }
+    } else {
+      if (!email.trim() || !password.trim()) {
+        setError('Email and password are required.');
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
       if (mode === 'register') {
         await registerUser(username, email, password);
-        setMessage('Account created! You can log in now.');
-        setTimeout(() => switchMode('login'), 1200);
+        setMessage('Account created! Logging you in...');
+
+        const loginResponse = await loginUser(email, password);
+        const { token, username: loggedInUsername } = loginResponse.data;
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('username', loggedInUsername);
+        setTimeout(() => onLoginSuccess(), 800);
       } else {
-        const response = await loginUser(username, password);
+        const response = await loginUser(email, password);
         const { token, username: loggedInUsername } = response.data;
         localStorage.setItem('authToken', token);
         localStorage.setItem('username', loggedInUsername);
@@ -40,11 +86,17 @@ function AuthPage({ onLoginSuccess }) {
         setTimeout(() => onLoginSuccess(), 600);
       }
     } catch (err) {
-      setError(
-        mode === 'register'
-          ? 'Registration failed. Please check your details.'
-          : 'Invalid username or password.'
-      );
+      if (mode === 'register') {
+        const data = err.response?.data;
+        const specificError =
+          data?.email?.[0] ||
+          data?.username?.[0] ||
+          data?.password?.[0] ||
+          'Registration failed. Please check your details.';
+        setError(specificError);
+      } else {
+        setError('Invalid email or password.');
+      }
     } finally {
       setLoading(false);
     }
@@ -54,9 +106,9 @@ function AuthPage({ onLoginSuccess }) {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-brand">
-        <div className="auth-logo">T</div>
-        <h1>Tallyd</h1>
-        <p className="auth-tagline">Every expense counted.</p>
+          <div className="auth-logo">T</div>
+          <h1>TallyD</h1>
+          <p className="auth-tagline">Every expense counted.</p>
         </div>
 
         <div className="auth-tabs">
@@ -77,45 +129,77 @@ function AuthPage({ onLoginSuccess }) {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="auth-field">
-            <label>Username</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-
           {mode === 'register' && (
             <div className="auth-field">
-              <label>Email</label>
+              <label>Username *</label>
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </div>
           )}
 
           <div className="auth-field">
-            <label>Password</label>
+            <label>Email *</label>
             <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
 
+          <div className="auth-field">
+            <label>Password *</label>
+            <div className="password-input-wrapper">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword((prev) => !prev)}
+                tabIndex={-1}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
+            {mode === 'register' && password && (
+              <ul className="password-checklist">
+                <li className={passwordStrength.hasMinLength ? 'valid' : 'invalid'}>
+                  {passwordStrength.hasMinLength ? '✓' : '✗'} At least 8 characters
+                </li>
+                <li className={passwordStrength.hasLetter ? 'valid' : 'invalid'}>
+                  {passwordStrength.hasLetter ? '✓' : '✗'} Contains a letter
+                </li>
+                <li className={passwordStrength.hasNumber ? 'valid' : 'invalid'}>
+                  {passwordStrength.hasNumber ? '✓' : '✗'} Contains a number
+                </li>
+                <li className={passwordStrength.hasSpecial ? 'valid' : 'invalid'}>
+                  {passwordStrength.hasSpecial ? '✓' : '✗'} Contains a special character
+                </li>
+              </ul>
+            )}
+          </div>
+
           {mode === 'login' && (
             <div className="auth-forgot">
-              <a href="/forgot-password">Forgot password?</a>
+              <button
+                type="button"
+                className="auth-forgot-link"
+                onClick={() => setShowForgotPassword(true)}
+              >
+                Forgot password?
+              </button>
             </div>
           )}
 
-<button type="submit" className="auth-button" disabled={loading}>
+          <button type="submit" className="auth-button" disabled={loading}>
             {loading ? 'Please wait...' : mode === 'login' ? 'Log In' : 'Create Account'}
           </button>
         </form>
