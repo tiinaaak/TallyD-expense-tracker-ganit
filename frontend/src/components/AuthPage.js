@@ -1,25 +1,26 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
 import { registerUser, loginUser } from '../api/auth';
 import ForgotPassword from './ForgotPassword';
+import Logo from './Logo';
 import './Auth.css';
 
 function getPasswordStrength(password) {
-  if (!password) return { label: '', score: 0, hasMinLength: false, hasLetter: false, hasNumber: false, hasSpecial: false };
-
+  if (!password) return { label: '', hasMinLength: false, hasLetter: false, hasNumber: false, hasSpecial: false };
   const hasMinLength = password.length >= 8;
   const hasLetter = /[a-zA-Z]/.test(password);
   const hasNumber = /\d/.test(password);
   const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
   const meetsAll = hasMinLength && hasLetter && hasNumber && hasSpecial;
-
-  if (!hasMinLength) return { label: 'Weak', score: 1, hasMinLength, hasLetter, hasNumber, hasSpecial };
-  if (meetsAll) return { label: 'Strong', score: 4, hasMinLength, hasLetter, hasNumber, hasSpecial };
-  return { label: 'Medium', score: 2, hasMinLength, hasLetter, hasNumber, hasSpecial };
+  if (!hasMinLength) return { label: 'Weak', hasMinLength, hasLetter, hasNumber, hasSpecial };
+  if (meetsAll) return { label: 'Strong', hasMinLength, hasLetter, hasNumber, hasSpecial };
+  return { label: 'Medium', hasMinLength, hasLetter, hasNumber, hasSpecial };
 }
 
 function AuthPage({ onLoginSuccess }) {
-  const [mode, setMode] = useState('login');
+  const location = useLocation();
+  const [mode, setMode] = useState(location.state?.mode || 'login');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -66,12 +67,10 @@ function AuthPage({ onLoginSuccess }) {
     }
 
     setLoading(true);
-
     try {
       if (mode === 'register') {
         await registerUser(username, email, password);
         setMessage('Account created! Logging you in...');
-
         const loginResponse = await loginUser(email, password);
         const { token, username: loggedInUsername } = loginResponse.data;
         localStorage.setItem('authToken', token);
@@ -89,9 +88,7 @@ function AuthPage({ onLoginSuccess }) {
       if (mode === 'register') {
         const data = err.response?.data;
         const specificError =
-          data?.email?.[0] ||
-          data?.username?.[0] ||
-          data?.password?.[0] ||
+          data?.email?.[0] || data?.username?.[0] || data?.password?.[0] ||
           'Registration failed. Please check your details.';
         setError(specificError);
       } else {
@@ -104,11 +101,16 @@ function AuthPage({ onLoginSuccess }) {
 
   return (
     <div className="auth-page">
+      <div className="auth-shape-1" />
+      <div className="auth-shape-2" />
+
       <div className="auth-card">
         <div className="auth-brand">
-          <div className="auth-logo">T</div>
-          <h1>TallyD</h1>
-          <p className="auth-tagline">Every expense counted.</p>
+          <Logo size={44} />
+          <h1>{mode === 'login' ? 'Welcome back! 👋' : 'Create your account'}</h1>
+          <p className="auth-subtitle">
+            {mode === 'login' ? 'Log in to your account' : 'Start your journey to better financial health.'}
+          </p>
         </div>
 
         <div className="auth-tabs">
@@ -132,41 +134,33 @@ function AuthPage({ onLoginSuccess }) {
           {mode === 'register' && (
             <div className="auth-field">
               <label>Username *</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
+              <div className="input-with-icon">
+                <User size={18} className="input-icon" />
+                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+              </div>
             </div>
           )}
 
           <div className="auth-field">
             <label>Email *</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <div className="input-with-icon">
+              <Mail size={18} className="input-icon" />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            </div>
           </div>
 
           <div className="auth-field">
             <label>Password *</label>
-            <div className="password-input-wrapper">
+            <div className="input-with-icon">
+              <Lock size={18} className="input-icon" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-              <button
-                type="button"
-                className="password-toggle-btn"
-                onClick={() => setShowPassword((prev) => !prev)}
-                tabIndex={-1}
-              >
-                {showPassword ? '🙈' : '👁️'}
+              <button type="button" className="input-icon-btn" onClick={() => setShowPassword((p) => !p)} tabIndex={-1}>
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
             {mode === 'register' && password && (
@@ -189,17 +183,13 @@ function AuthPage({ onLoginSuccess }) {
 
           {mode === 'login' && (
             <div className="auth-forgot">
-              <button
-                type="button"
-                className="auth-forgot-link"
-                onClick={() => setShowForgotPassword(true)}
-              >
+              <button type="button" className="auth-forgot-link" onClick={() => setShowForgotPassword(true)}>
                 Forgot password?
               </button>
             </div>
           )}
 
-          <button type="submit" className="auth-button" disabled={loading}>
+          <button type="submit" className="btn-primary auth-submit" disabled={loading}>
             {loading ? 'Please wait...' : mode === 'login' ? 'Log In' : 'Create Account'}
           </button>
         </form>
@@ -209,11 +199,7 @@ function AuthPage({ onLoginSuccess }) {
 
         <div className="auth-divider"><span>OR</span></div>
 
-        <button
-          type="button"
-          className="auth-oauth-button"
-          onClick={() => alert('Google Sign-In coming soon — requires backend OAuth setup.')}
-        >
+        <button type="button" className="auth-oauth-button" onClick={() => alert('Google Sign-In coming soon.')}>
           <svg width="18" height="18" viewBox="0 0 18 18">
             <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 01-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/>
             <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.96v2.33A9 9 0 009 18z"/>

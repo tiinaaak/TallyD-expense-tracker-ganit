@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Lock, Eye, EyeOff } from 'lucide-react';
 import { confirmPasswordReset } from '../api/auth';
+import Logo from './Logo';
 import './Auth.css';
 
 function getPasswordStrength(password) {
@@ -64,17 +66,21 @@ function ResetPassword() {
 
   return (
     <div className="auth-page">
+      <div className="auth-shape-1" />
+      <div className="auth-shape-2" />
+
       <div className="auth-card">
         <div className="auth-brand">
-          <div className="auth-logo">T</div>
-          <h1>TallyD</h1>
-          <p className="auth-tagline">Set a new password</p>
+          <Logo size={44} />
+          <h1>Set a new password</h1>
+          <p className="auth-subtitle">Choose a strong password for your account.</p>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="auth-field">
             <label>New Password *</label>
-            <div className="password-input-wrapper">
+            <div className="input-with-icon">
+              <Lock size={18} className="input-icon" />
               <input
                 type={showNewPassword ? 'text' : 'password'}
                 value={newPassword}
@@ -83,11 +89,11 @@ function ResetPassword() {
               />
               <button
                 type="button"
-                className="password-toggle-btn"
+                className="input-icon-btn"
                 onClick={() => setShowNewPassword((prev) => !prev)}
                 tabIndex={-1}
               >
-                {showNewPassword ? '🙈' : '👁️'}
+                {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
             {newPassword && (
@@ -110,7 +116,8 @@ function ResetPassword() {
 
           <div className="auth-field">
             <label>Confirm Password *</label>
-            <div className="password-input-wrapper">
+            <div className="input-with-icon">
+              <Lock size={18} className="input-icon" />
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
                 value={confirmPassword}
@@ -119,16 +126,16 @@ function ResetPassword() {
               />
               <button
                 type="button"
-                className="password-toggle-btn"
+                className="input-icon-btn"
                 onClick={() => setShowConfirmPassword((prev) => !prev)}
                 tabIndex={-1}
               >
-                {showConfirmPassword ? '🙈' : '👁️'}
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
-          <button type="submit" className="auth-button" disabled={loading}>
+          <button type="submit" className="btn-primary auth-submit" disabled={loading}>
             {loading ? 'Please wait...' : 'Reset Password'}
           </button>
         </form>

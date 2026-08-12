@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { Mail } from 'lucide-react';
 import { requestPasswordReset } from '../api/auth';
+import Logo from './Logo';
 import './Auth.css';
 
 function ForgotPassword({ onBackToLogin }) {
@@ -26,25 +28,31 @@ function ForgotPassword({ onBackToLogin }) {
 
   return (
     <div className="auth-page">
+      <div className="auth-shape-1" />
+      <div className="auth-shape-2" />
+
       <div className="auth-card">
         <div className="auth-brand">
-          <div className="auth-logo">T</div>
-          <h1>TallyD</h1>
-          <p className="auth-tagline">Reset your password</p>
+          <Logo size={44} />
+          <h1>Reset your password</h1>
+          <p className="auth-subtitle">We'll email you a link to get back in.</p>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="auth-field">
             <label>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <div className="input-with-icon">
+              <Mail size={18} className="input-icon" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
-          <button type="submit" className="auth-button" disabled={loading}>
+          <button type="submit" className="btn-primary auth-submit" disabled={loading}>
             {loading ? 'Sending...' : 'Send Reset Link'}
           </button>
         </form>
@@ -52,9 +60,9 @@ function ForgotPassword({ onBackToLogin }) {
         {message && <div className="auth-message success">{message}</div>}
         {error && <div className="auth-message error">{error}</div>}
 
-        <div className="auth-switch">
+        <p className="auth-switch-text">
           <button type="button" onClick={onBackToLogin}>Back to Log In</button>
-        </div>
+        </p>
       </div>
     </div>
   );
