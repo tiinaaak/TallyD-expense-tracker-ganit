@@ -1,0 +1,41 @@
+:root {
+  /* Brand colors */
+  --tally-purple: #6D3FE8;
+  --tally-purple-light: #8B5CF6;
+  --tally-pink: #F05A9D;
+  --tally-orange: #FF8A34;
+  --tally-blue: #3155F5;
+  --tally-green: #25B77A;
+
+  /* Text */
+  --tally-text-main: #172033;
+  --tally-text-secondary: #64748B;
+
+  /* Backgrounds */
+  --tally-bg: #F7F8FC;
+  --tally-white: #FFFFFF;
+  --tally-border: #E7EAF0;
+
+  /* Soft tints */
+  --tally-soft-purple: #F1ECFF;
+  --tally-soft-pink: #FFF0F7;
+  --tally-soft-orange: #FFF2E8;
+  --tally-soft-blue: #EEF3FF;
+  --tally-soft-green: #EAF9F3;
+
+  /* Gradients */
+  --tally-gradient-purple-pink: linear-gradient(135deg, #6D3FE8 0%, #F05A9D 100%);
+  --tally-gradient-purple-blue: linear-gradient(135deg, #6D3FE8 0%, #3155F5 100%);
+  --tally-gradient-orange-pink: linear-gradient(135deg, #FF8A34 0%, #F05A9D 100%);
+
+  /* Radius */
+  --tally-radius-sm: 12px;
+  --tally-radius-md: 16px;
+  --tally-radius-lg: 24px;
+
+  /* Shadow */
+  --tally-shadow: 0 8px 30px rgba(109, 63, 232, 0.08);
+  --tally-shadow-sm: 0 2px 10px rgba(23, 32, 51, 0.05);
+
+  --tally-font: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+}
