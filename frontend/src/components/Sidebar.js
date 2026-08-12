@@ -1,42 +1,44 @@
-function Sidebar({ onLogout }) {
-  return (
-    <nav
-      style={{
-        background: '#34495e',
-        color: 'white',
-        width: '200px',
-        padding: '20px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-      }}
-    >
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-        <li style={{ marginBottom: '10px' }}>Dashboard</li>
-        <li style={{ marginBottom: '10px' }}>Expenses</li>
-        <li style={{ marginBottom: '10px' }}>Budgets</li>
-        <li style={{ marginBottom: '10px' }}>Analytics</li>
-      </ul>
+import { NavLink } from 'react-router-dom';
+import { LayoutGrid, Wallet, Target, BarChart3, Tags, Settings, LogOut } from 'lucide-react';
+import Logo from './Logo';
+import './Dashboard.css';
 
-      <button
-        onClick={() => {
-          console.log('Logout clicked');
-          onLogout();
-        }}
-        style={{
-          padding: '10px',
-          backgroundColor: '#16233F',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          fontSize: '14px',
-          fontWeight: '600',
-        }}
-      >
-        Log Out
+function Sidebar({ onLogout }) {
+  const navItems = [
+    { to: '/dashboard', end: true, label: 'Overview', icon: LayoutGrid },
+    { to: '/dashboard/expenses', label: 'Expenses', icon: Wallet },
+    { to: '/dashboard/budgets', label: 'Budgets', icon: Target },
+    { to: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
+    { to: '/dashboard/categories', label: 'Categories', icon: Tags },
+    { to: '/dashboard/settings', label: 'Settings', icon: Settings },
+  ];
+
+  return (
+    <aside className="sidebar">
+      <div className="sidebar-brand">
+        <Logo size={34} />
+        <span>TallyD</span>
+      </div>
+
+      <nav className="sidebar-nav">
+        {navItems.map(({ to, end, label, icon: Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={end}
+            className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
+          >
+            <Icon size={18} />
+            <span>{label}</span>
+          </NavLink>
+        ))}
+      </nav>
+
+      <button className="sidebar-logout" onClick={onLogout}>
+        <LogOut size={18} />
+        <span>Log Out</span>
       </button>
-    </nav>
+    </aside>
   );
 }
 

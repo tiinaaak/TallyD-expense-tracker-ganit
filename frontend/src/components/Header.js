@@ -1,7 +1,16 @@
+import Logo from './Logo';
+
 function Header() {
+  const username = localStorage.getItem('username') || 'User';
+  const initial = username.charAt(0).toUpperCase();
+
   return (
-    <header style={{ background: '#2c3e50', color: 'white', padding: '15px 20px' }}>
-      <h1 style={{ margin: 0 }}>TallyD</h1>
+    <header className="topbar">
+      <div className="topbar-brand">
+        <Logo size={30} />
+        <span>TallyD</span>
+      </div>
+      <div className="topbar-profile">{initial}</div>
     </header>
   );
 }
