@@ -1,21 +1,10 @@
 import { useState, useEffect } from 'react';
 import { getExpenses, createExpense, deleteExpense } from '../api/expenses';
-
-const CATEGORY_OPTIONS = [
-  'Food & Dining',
-  'Shopping',
-  'Travel',
-  'Bills & Utilities',
-  'Entertainment',
-  'Health',
-  'Education',
-  'Subscriptions',
-  'Rent',
-  'Other',
-];
+import { getCategories } from '../api/categories';
 
 function ExpensesPage() {
   const [expenses, setExpenses] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
   const [date, setDate] = useState('');
@@ -35,8 +24,18 @@ function ExpensesPage() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const response = await getCategories();
+      setCategories(response.data);
+    } catch (err) {
+      setError('Could not load categories.');
+    }
+  };
+
   useEffect(() => {
     fetchExpenses();
+    fetchCategories();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -50,7 +49,7 @@ function ExpensesPage() {
 
     setLoading(true);
     try {
-      await createExpense({ amount, category, date, description });
+      await createExpense({ amount, category: Number(category), date, description });
       setAmount('');
       setCategory('');
       setDate('');
@@ -72,12 +71,12 @@ function ExpensesPage() {
     }
   };
 
-  const uniqueCategories = ['All', ...new Set(expenses.map((e) => e.category))];
+  const uniqueCategoryNames = ['All', ...new Set(expenses.map((e) => e.category_name).filter(Boolean))];
 
   const filteredExpenses =
     categoryFilter === 'All'
       ? expenses
-      : expenses.filter((e) => e.category === categoryFilter);
+      : expenses.filter((e) => e.category_name === categoryFilter);
 
   const sortedExpenses = [...filteredExpenses].sort((a, b) => {
     switch (sortBy) {
@@ -124,8 +123,8 @@ function ExpensesPage() {
           style={{ ...selectStyle, minWidth: '160px' }}
         >
           <option value="">Select category</option>
-          {CATEGORY_OPTIONS.map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>{cat.name}</option>
           ))}
         </select>
         <input
@@ -146,6 +145,12 @@ function ExpensesPage() {
         </button>
       </form>
 
+      {categories.length === 0 && (
+        <p style={{ color: '#8B8FA3', fontSize: '13px' }}>
+          No categories yet — add one from the Categories page first.
+        </p>
+      )}
+
       {error && <p style={{ color: '#E74C3C' }}>{error}</p>}
 
       {expenses.length > 0 && (
@@ -165,7 +170,7 @@ function ExpensesPage() {
               onChange={(e) => setCategoryFilter(e.target.value)}
               style={selectStyle}
             >
-              {uniqueCategories.map((cat) => (
+              {uniqueCategoryNames.map((cat) => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
@@ -210,7 +215,7 @@ function ExpensesPage() {
             {sortedExpenses.map((exp) => (
               <tr key={exp.id} style={{ borderBottom: '1px solid #EEEEF5' }}>
                 <td style={tdStyle}>{exp.date}</td>
-                <td style={tdStyle}>{exp.category}</td>
+                <td style={tdStyle}>{exp.category_name || '—'}</td>
                 <td style={tdStyle}>{exp.description || '—'}</td>
                 <td style={tdStyle}>₹{exp.amount}</td>
                 <td style={tdStyle}>

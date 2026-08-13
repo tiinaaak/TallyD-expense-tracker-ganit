@@ -14,6 +14,7 @@ import AnalyticsPage from './components/AnalyticsPage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './components/Dashboard.css';
+import CategoriesPage from './components/CategoriesPage';
 
 function DashboardLayout({ onLogout }) {
   return (
@@ -27,7 +28,7 @@ function DashboardLayout({ onLogout }) {
             <Route path="expenses" element={<ExpensesPage />} />
             <Route path="budgets" element={<BudgetsPage />} />
             <Route path="analytics" element={<AnalyticsPage />} />
-            <Route path="categories" element={<div>Categories — coming soon</div>} />
+            <Route path="categories" element={<CategoriesPage />} />
             <Route path="settings" element={<div>Settings — coming soon</div>} />
           </Routes>
         </main>
