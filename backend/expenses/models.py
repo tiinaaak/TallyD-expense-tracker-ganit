@@ -25,3 +25,18 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.category} - {self.amount} on {self.date}"
+
+class Budget(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='budgets')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True, related_name='budgets')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    month = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'category', 'month')
+        ordering = ['-month']
+
+    def __str__(self):
+        label = self.category.name if self.category else 'Overall'
+        return f"{label} budget - ₹{self.amount} for {self.month.strftime('%B %Y')}"
