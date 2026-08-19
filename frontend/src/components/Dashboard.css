@@ -764,3 +764,124 @@
 .bva-pct.over {
   color: #C22B65;
 }
+/* Month-grouped expense accordion */
+.month-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.month-group {
+  background: var(--tally-white);
+  border: 1px solid var(--tally-border);
+  border-radius: var(--tally-radius-md);
+  overflow: hidden;
+}
+
+.month-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--tally-soft-purple);
+  border: none;
+  cursor: pointer;
+  font-family: var(--tally-font);
+}
+
+.month-group-title {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--tally-text-main);
+}
+
+.month-group-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--tally-text-secondary);
+}
+
+.month-group-chevron {
+  transition: transform 0.15s ease;
+}
+
+.month-group-chevron.open {
+  transform: rotate(180deg);
+}
+/* Confirm modal */
+.confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(20, 16, 40, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.confirm-modal {
+  background: var(--tally-white);
+  border-radius: var(--tally-radius-md);
+  padding: 24px;
+  max-width: 380px;
+  width: 100%;
+  box-shadow: 0 20px 50px rgba(20, 16, 40, 0.25);
+}
+
+.confirm-modal-title {
+  margin: 0 0 8px;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--tally-text-main);
+}
+
+.confirm-modal-message {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: var(--tally-text-secondary);
+  line-height: 1.5;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirm-modal-cancel {
+  padding: 9px 16px;
+  border-radius: var(--tally-radius-sm);
+  border: 1px solid var(--tally-border);
+  background: var(--tally-white);
+  color: var(--tally-text-main);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.confirm-modal-cancel:hover {
+  background: var(--tally-bg);
+}
+
+.confirm-modal-confirm {
+  padding: 9px 16px;
+  border-radius: var(--tally-radius-sm);
+  border: none;
+  background: #C22B65;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.confirm-modal-confirm:hover {
+  background: #A82256;
+}

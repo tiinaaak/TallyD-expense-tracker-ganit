@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { Plus, Trash2, Tag } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { getCategories, createCategory, deleteCategory } from '../api/categories';
+import ConfirmModal from './ConfirmModal';
 
 function CategoriesPage() {
   const [categories, setCategories] = useState([]);
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null); // holds the category being confirmed for deletion
 
   const fetchCategories = async () => {
     try {
@@ -47,15 +49,18 @@ function CategoriesPage() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
     try {
-      await deleteCategory(id);
+      await deleteCategory(pendingDelete.id);
       fetchCategories();
       toast.success('Category deleted.');
     } catch (err) {
       const msg = err.response?.data?.detail || 'Could not delete category.';
       setError(msg);
       toast.error(msg);
+    } finally {
+      setPendingDelete(null);
     }
   };
 
@@ -98,13 +103,25 @@ function CategoriesPage() {
           {categories.map((cat) => (
             <div key={cat.id} className="category-row-card">
               <span className="category-row-name">{cat.name}</span>
-              <button onClick={() => handleDelete(cat.id)} className="icon-delete-btn">
+              <button onClick={() => setPendingDelete(cat)} className="icon-delete-btn">
                 <Trash2 size={15} />
               </button>
             </div>
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={!!pendingDelete}
+        title="Delete category?"
+        message={
+          pendingDelete
+            ? `Are you sure you want to delete "${pendingDelete.name}"? This can't be undone.`
+            : ''
+        }
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   );
 }

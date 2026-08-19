@@ -110,7 +110,9 @@ function ExpensesPage() {
     }
   });
 
-  const totalSpent = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+  // Header now reflects the CURRENT filter (month + category), not the grand total
+  const filteredTotal = sortedExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+  const isFiltered = categoryFilter !== 'All' || monthFilter !== 'All';
 
   return (
     <div className="page-container">
@@ -118,7 +120,14 @@ function ExpensesPage() {
         <div>
           <h2 className="page-title">Expenses</h2>
           <p className="page-subtitle">
-            {expenses.length} expense{expenses.length !== 1 ? 's' : ''} · ₹{totalSpent.toLocaleString('en-IN', { minimumFractionDigits: 2 })} total
+            {sortedExpenses.length} expense{sortedExpenses.length !== 1 ? 's' : ''} · ₹
+            {filteredTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            {monthFilter !== 'All' ? ` in ${formatMonthLabel(monthFilter)}` : ' total'}
+            {isFiltered && (
+              <span className="hint-text" style={{ marginLeft: 6 }}>
+                (of {expenses.length} total)
+              </span>
+            )}
           </p>
         </div>
       </div>

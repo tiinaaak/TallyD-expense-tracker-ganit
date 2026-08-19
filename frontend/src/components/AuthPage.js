@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { registerUser, loginUser } from '../api/auth';
 import ForgotPassword from './ForgotPassword';
 import Logo from './Logo';
@@ -71,6 +72,7 @@ function AuthPage({ onLoginSuccess }) {
       if (mode === 'register') {
         await registerUser(username, email, password);
         setMessage('Account created! Logging you in...');
+        toast.success('Account created!');
         const loginResponse = await loginUser(email, password);
         const { token, username: loggedInUsername } = loginResponse.data;
         localStorage.setItem('authToken', token);
@@ -82,6 +84,7 @@ function AuthPage({ onLoginSuccess }) {
         localStorage.setItem('authToken', token);
         localStorage.setItem('username', loggedInUsername);
         setMessage(`Welcome back, ${loggedInUsername}!`);
+        toast.success('Welcome back!');
         setTimeout(() => onLoginSuccess(), 600);
       }
     } catch (err) {
@@ -91,8 +94,10 @@ function AuthPage({ onLoginSuccess }) {
           data?.email?.[0] || data?.username?.[0] || data?.password?.[0] ||
           'Registration failed. Please check your details.';
         setError(specificError);
+        toast.error(specificError);
       } else {
         setError('Invalid email or password.');
+        toast.error('Invalid email or password.');
       }
     } finally {
       setLoading(false);
