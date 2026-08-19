@@ -15,6 +15,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './components/Dashboard.css';
 import CategoriesPage from './components/CategoriesPage';
+import useIdleLogout from './hooks/useIdleLogout';
 
 function DashboardLayout({ onLogout }) {
   return (
@@ -54,6 +55,8 @@ function AppRoutes() {
     setIsLoggedIn(true);
     navigate('/dashboard');
   };
+
+  useIdleLogout(isLoggedIn, handleLogout);
 
   return (
     <Routes>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Tag } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { getCategories, createCategory, deleteCategory } from '../api/categories';
 
 function CategoriesPage() {
@@ -14,6 +15,7 @@ function CategoriesPage() {
       setCategories(response.data);
     } catch (err) {
       setError('Could not load categories.');
+      toast.error('Could not load categories.');
     }
   };
 
@@ -35,9 +37,11 @@ function CategoriesPage() {
       await createCategory(name.trim());
       setName('');
       fetchCategories();
+      toast.success('Category added!');
     } catch (err) {
       const msg = err.response?.data?.name?.[0] || 'Could not add category.';
       setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -47,8 +51,11 @@ function CategoriesPage() {
     try {
       await deleteCategory(id);
       fetchCategories();
+      toast.success('Category deleted.');
     } catch (err) {
-      setError('Could not delete category.');
+      const msg = err.response?.data?.detail || 'Could not delete category.';
+      setError(msg);
+      toast.error(msg);
     }
   };
 

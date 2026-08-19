@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Wallet } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { getExpenses, createExpense, deleteExpense } from '../api/expenses';
 import { getCategories } from '../api/categories';
 
@@ -14,6 +15,7 @@ function ExpensesPage() {
   const [loading, setLoading] = useState(false);
 
   const [categoryFilter, setCategoryFilter] = useState('All');
+  const [monthFilter, setMonthFilter] = useState('All');
   const [sortBy, setSortBy] = useState('date-desc');
 
   const fetchExpenses = async () => {
@@ -22,6 +24,7 @@ function ExpensesPage() {
       setExpenses(response.data);
     } catch (err) {
       setError('Could not load expenses.');
+      toast.error('Could not load expenses.');
     }
   };
 
@@ -31,6 +34,7 @@ function ExpensesPage() {
       setCategories(response.data);
     } catch (err) {
       setError('Could not load categories.');
+      toast.error('Could not load categories.');
     }
   };
 
@@ -56,8 +60,10 @@ function ExpensesPage() {
       setDate('');
       setDescription('');
       fetchExpenses();
+      toast.success('Expense added!');
     } catch (err) {
       setError('Could not add expense.');
+      toast.error('Could not add expense.');
     } finally {
       setLoading(false);
     }
@@ -67,17 +73,27 @@ function ExpensesPage() {
     try {
       await deleteExpense(id);
       fetchExpenses();
+      toast.success('Expense deleted.');
     } catch (err) {
       setError('Could not delete expense.');
+      toast.error('Could not delete expense.');
     }
   };
 
   const uniqueCategoryNames = ['All', ...new Set(expenses.map((e) => e.category_name).filter(Boolean))];
 
-  const filteredExpenses =
-    categoryFilter === 'All'
-      ? expenses
-      : expenses.filter((e) => e.category_name === categoryFilter);
+  const formatMonthLabel = (yyyyMm) => {
+    const [year, mon] = yyyyMm.split('-').map(Number);
+    return new Date(year, mon - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  const uniqueMonths = [
+    ...new Set(expenses.map((e) => e.date.slice(0, 7))),
+  ].sort((a, b) => b.localeCompare(a)); // newest first
+
+  const filteredExpenses = expenses
+    .filter((e) => categoryFilter === 'All' || e.category_name === categoryFilter)
+    .filter((e) => monthFilter === 'All' || e.date.slice(0, 7) === monthFilter);
 
   const sortedExpenses = [...filteredExpenses].sort((a, b) => {
     switch (sortBy) {
@@ -165,6 +181,15 @@ function ExpensesPage() {
 
       {expenses.length > 0 && (
         <div className="filter-bar">
+          <div className="form-field">
+            <label>Filter by month</label>
+            <select value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} className="tally-select">
+              <option value="All">All</option>
+              {uniqueMonths.map((m) => (
+                <option key={m} value={m}>{formatMonthLabel(m)}</option>
+              ))}
+            </select>
+          </div>
           <div className="form-field">
             <label>Filter by category</label>
             <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="tally-select">

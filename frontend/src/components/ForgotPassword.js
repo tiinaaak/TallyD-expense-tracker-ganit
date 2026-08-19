@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Mail } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { requestPasswordReset } from '../api/auth';
 import Logo from './Logo';
 import './Auth.css';
@@ -19,8 +20,10 @@ function ForgotPassword({ onBackToLogin }) {
     try {
       await requestPasswordReset(email);
       setMessage('If that email exists, a reset link has been sent. Check the console/email for the link.');
+      toast.success('Reset link sent — check your email.');
     } catch (err) {
       setError('Something went wrong. Please try again.');
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }

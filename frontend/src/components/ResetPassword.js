@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Lock, Eye, EyeOff } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { confirmPasswordReset } from '../api/auth';
 import Logo from './Logo';
 import './Auth.css';
@@ -56,9 +57,12 @@ function ResetPassword() {
     try {
       await confirmPasswordReset(uid, token, newPassword);
       setMessage('Password reset successful! Redirecting to login...');
+      toast.success('Password changed! You can now log in.');
       setTimeout(() => navigate('/'), 1500);
     } catch (err) {
-      setError(err.response?.data?.error || 'This reset link is invalid or has expired.');
+      const msg = err.response?.data?.error || 'This reset link is invalid or has expired.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
