@@ -99,19 +99,6 @@
   font-size: 16px;
 }
 
-.topbar-profile {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--tally-gradient-purple-pink);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 14px;
-}
-
 /* Main content area */
 .dashboard-main {
   flex: 1;
@@ -764,6 +751,7 @@
 .bva-pct.over {
   color: #C22B65;
 }
+
 /* Month-grouped expense accordion */
 .month-group-list {
   display: flex;
@@ -812,6 +800,7 @@
 .month-group-chevron.open {
   transform: rotate(180deg);
 }
+
 /* Confirm modal */
 .confirm-modal-overlay {
   position: fixed;
@@ -884,4 +873,74 @@
 
 .confirm-modal-confirm:hover {
   background: #A82256;
+}
+
+/* Topbar profile dropdown */
+.topbar-profile-wrap {
+  position: relative;
+}
+
+.topbar-profile {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--tally-gradient-purple-pink);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.topbar-dropdown {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  background: var(--tally-white);
+  border: 1px solid var(--tally-border);
+  border-radius: var(--tally-radius-sm);
+  box-shadow: 0 8px 24px rgba(23, 32, 51, 0.12);
+  min-width: 180px;
+  padding: 8px;
+  z-index: 30;
+}
+
+.topbar-dropdown-username {
+  padding: 8px 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--tally-text-secondary);
+  border-bottom: 1px solid var(--tally-bg);
+  margin-bottom: 6px;
+}
+
+.topbar-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--tally-text-main);
+  cursor: pointer;
+  text-align: left;
+}
+
+.topbar-dropdown-item:hover {
+  background: var(--tally-soft-purple);
+}
+
+.topbar-dropdown-logout {
+  color: #C22B65;
+}
+
+.topbar-dropdown-logout:hover {
+  background: var(--tally-soft-pink);
 }

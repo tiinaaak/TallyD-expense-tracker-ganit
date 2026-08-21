@@ -22,7 +22,7 @@ function DashboardLayout({ onLogout }) {
     <div className="dashboard-layout">
       <Sidebar onLogout={onLogout} />
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-        <Header />
+        <Header onLogout={onLogout} />
         <main className="dashboard-main">
           <Routes>
             <Route index element={<DashboardHome />} />
