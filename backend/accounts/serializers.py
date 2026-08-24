@@ -4,7 +4,7 @@ from rest_framework import serializers
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-
+from .models import UserProfile
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -50,3 +50,33 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     uid = serializers.CharField()
     token = serializers.CharField()
     new_password = serializers.CharField(write_only=True)
+
+
+class UserListSerializer(serializers.ModelSerializer):
+
+    role = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            'id',
+            'username',
+            'email',
+            'role',
+            'status',
+        ]
+
+    def get_role(self, obj):
+
+        try:
+            return obj.profile.role
+        except UserProfile.DoesNotExist:
+            return 'user'
+
+    def get_status(self, obj):
+
+        try:
+            return 'active' if obj.profile.is_active else 'disabled'
+        except UserProfile.DoesNotExist:
+            return 'active'
