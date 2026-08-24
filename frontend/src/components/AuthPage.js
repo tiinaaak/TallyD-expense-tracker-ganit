@@ -74,15 +74,17 @@ function AuthPage({ onLoginSuccess }) {
         setMessage('Account created! Logging you in...');
         toast.success('Account created!');
         const loginResponse = await loginUser(email, password);
-        const { token, username: loggedInUsername } = loginResponse.data;
+        const { token, username: loggedInUsername, is_staff } = loginResponse.data;
         localStorage.setItem('authToken', token);
         localStorage.setItem('username', loggedInUsername);
+        localStorage.setItem('is_staff', is_staff);
         setTimeout(() => onLoginSuccess(), 800);
       } else {
         const response = await loginUser(email, password);
-        const { token, username: loggedInUsername } = response.data;
+        const { token, username: loggedInUsername, is_staff } = response.data;
         localStorage.setItem('authToken', token);
         localStorage.setItem('username', loggedInUsername);
+        localStorage.setItem('is_staff', is_staff);
         setMessage(`Welcome back, ${loggedInUsername}!`);
         toast.success('Welcome back!');
         setTimeout(() => onLoginSuccess(), 600);
