@@ -9,10 +9,17 @@ from .views import (
     UserRoleUpdateView,
     UserStatusUpdateView,
     UserDeleteView,
+    NotificationListView,
+    NotificationReadView,
+    NotificationReadAllView,
 )
 
 
 urlpatterns = [
+
+    # ========================================================
+    # Authentication
+    # ========================================================
 
     path(
         'register/',
@@ -38,31 +45,55 @@ urlpatterns = [
         name='password-reset-confirm'
     ),
 
-    # Admin users
+
+    # ========================================================
+    # Admin / User Management
+    # ========================================================
+
     path(
         'users/',
         UserListView.as_view(),
         name='user-list'
     ),
 
-    # Change role
     path(
         'users/<int:user_id>/role/',
         UserRoleUpdateView.as_view(),
         name='user-role-update'
     ),
 
-    # Enable / disable
     path(
         'users/<int:user_id>/status/',
         UserStatusUpdateView.as_view(),
         name='user-status-update'
     ),
 
-    # Delete user
     path(
         'users/<int:user_id>/',
         UserDeleteView.as_view(),
         name='user-delete'
+    ),
+
+
+    # ========================================================
+    # Notifications
+    # ========================================================
+
+    path(
+        'notifications/',
+        NotificationListView.as_view(),
+        name='notifications'
+    ),
+
+    path(
+        'notifications/read-all/',
+        NotificationReadAllView.as_view(),
+        name='notifications-read-all'
+    ),
+
+    path(
+        'notifications/<int:pk>/read/',
+        NotificationReadView.as_view(),
+        name='notification-read'
     ),
 ]

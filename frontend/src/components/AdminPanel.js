@@ -28,7 +28,6 @@ function AdminPanel() {
   const [actionUser, setActionUser] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // User selected for delete confirmation
   const [deleteUserTarget, setDeleteUserTarget] = useState(null);
 
   // ============================================================
@@ -42,7 +41,6 @@ function AdminPanel() {
 
       const data = await getUsers();
 
-      // users.js returns response.json() directly
       setUsers(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to load users:', err);
@@ -139,6 +137,19 @@ function AdminPanel() {
   };
 
   // ============================================================
+  // FORMAT CURRENCY
+  // ============================================================
+
+  const formatCurrency = (value) => {
+    const amount = Number(value || 0);
+
+    return `₹${amount.toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
+
+  // ============================================================
   // CHANGE ROLE
   // ============================================================
 
@@ -223,8 +234,6 @@ function AdminPanel() {
   // ============================================================
 
   const handleDeleteUser = (user) => {
-    // Do NOT delete immediately.
-    // First open the confirmation modal.
     setActionUser(null);
     setDeleteUserTarget(user);
   };
@@ -432,9 +441,7 @@ function AdminPanel() {
         </div>
 
 
-        {/* ====================================================
-            ERROR
-        ==================================================== */}
+        {/* ERROR */}
 
         {error && (
           <div className="admin-error">
@@ -443,9 +450,7 @@ function AdminPanel() {
         )}
 
 
-        {/* ====================================================
-            EMPTY
-        ==================================================== */}
+        {/* EMPTY */}
 
         {!error && users.length === 0 && (
           <div className="admin-empty-state">
@@ -482,6 +487,14 @@ function AdminPanel() {
 
                   <th>
                     Status
+                  </th>
+
+                  <th>
+                    Total Expenses
+                  </th>
+
+                  <th>
+                    Budget
                   </th>
 
                   <th>
@@ -570,6 +583,24 @@ function AdminPanel() {
 
                       </span>
 
+                    </td>
+
+
+                    {/* TOTAL EXPENSES */}
+
+                    <td className="admin-number-cell">
+                      {formatCurrency(
+                        user.total_expenses
+                      )}
+                    </td>
+
+
+                    {/* BUDGET */}
+
+                    <td className="admin-number-cell">
+                      {formatCurrency(
+                        user.budget
+                      )}
                     </td>
 
 

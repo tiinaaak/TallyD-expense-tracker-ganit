@@ -1,19 +1,32 @@
 from rest_framework import viewsets, permissions
+
 from .models import Expense, Category, Budget
-from .serializers import ExpenseSerializer, CategorySerializer, BudgetSerializer
+from .serializers import (
+    ExpenseSerializer,
+    CategorySerializer,
+    BudgetSerializer,
+)
 from .permissions import IsOwnerOrAdmin
+
+from accounts.models import Notification
+
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsOwnerOrAdmin,
+    ]
 
     def get_queryset(self):
         user = self.request.user
         requested_user_id = self.request.query_params.get('user_id')
 
         if user.is_staff and requested_user_id:
-            return Category.objects.filter(user_id=requested_user_id)
+            return Category.objects.filter(
+                user_id=requested_user_id
+            )
 
         return Category.objects.filter(user=user)
 
@@ -23,33 +36,69 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 class ExpenseViewSet(viewsets.ModelViewSet):
     serializer_class = ExpenseSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsOwnerOrAdmin,
+    ]
 
     def get_queryset(self):
         user = self.request.user
         requested_user_id = self.request.query_params.get('user_id')
 
         if user.is_staff and requested_user_id:
-            return Expense.objects.filter(user_id=requested_user_id).order_by('-date')
+            return Expense.objects.filter(
+                user_id=requested_user_id
+            ).order_by('-date')
 
-        return Expense.objects.filter(user=user).order_by('-date')
+        return Expense.objects.filter(
+            user=user
+        ).order_by('-date')
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+
+        # Save the expense first
+        expense = serializer.save(
+            user=self.request.user
+        )
+
+        # Get category name safely
+        category_name = (
+            expense.category.name
+            if expense.category
+            else 'Uncategorized'
+        )
+
+        # Create notification
+        Notification.objects.create(
+            user=self.request.user,
+            title='Expense Added',
+            message=(
+                f'₹{expense.amount} added '
+                f'to {category_name}.'
+            ),
+            notification_type='expense',
+        )
 
 
 class BudgetViewSet(viewsets.ModelViewSet):
     serializer_class = BudgetSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsOwnerOrAdmin,
+    ]
 
     def get_queryset(self):
         user = self.request.user
         requested_user_id = self.request.query_params.get('user_id')
 
         if user.is_staff and requested_user_id:
-            return Budget.objects.filter(user_id=requested_user_id).order_by('-month')
+            return Budget.objects.filter(
+                user_id=requested_user_id
+            ).order_by('-month')
 
-        return Budget.objects.filter(user=user).order_by('-month')
+        return Budget.objects.filter(
+            user=user
+        ).order_by('-month')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
