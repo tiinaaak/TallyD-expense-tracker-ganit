@@ -20,11 +20,7 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 # ECS public IP
-ALLOWED_HOSTS = [
-    '34.237.91.59',
-    'localhost',
-    '127.0.0.1',
-]
+ALLOWED_HOSTS = ['*']
 
 # Required when accessing Django through the ECS public IP
 CSRF_TRUSTED_ORIGINS = [
