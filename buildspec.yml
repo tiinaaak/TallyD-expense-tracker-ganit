@@ -4,17 +4,24 @@ phases:
   pre_build:
     commands:
       - echo "Starting TallyD CI/CD build..."
-      - echo "Docker version:"
-      - docker --version
+      - echo "Running backend checks..."
+      - cd backend
+      - pip install -r requirements.txt
+      - python manage.py check
+      - cd ..
+      - echo "Running frontend tests..."
+      - cd frontend
+      - npm ci
+      - npm test -- --watchAll=false
+      - cd ..
 
   build:
     commands:
-      - echo "Building TallyD backend image..."
+      - echo "Building TallyD backend Docker image..."
       - docker build -t tallyd-backend ./backend
-
-      - echo "Building TallyD frontend image..."
+      - echo "Building TallyD frontend Docker image..."
       - docker build -t tallyd-frontend ./frontend
 
   post_build:
     commands:
-      - echo "TallyD Docker images built successfully."
+      - echo "TallyD CI build completed successfully."
