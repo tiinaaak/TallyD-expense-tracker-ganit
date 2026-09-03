@@ -1,0 +1,20 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "Starting TallyD CI/CD build..."
+      - echo "Docker version:"
+      - docker --version
+
+  build:
+    commands:
+      - echo "Building TallyD backend image..."
+      - docker build -t tallyd-backend ./backend
+
+      - echo "Building TallyD frontend image..."
+      - docker build -t tallyd-frontend ./frontend
+
+  post_build:
+    commands:
+      - echo "TallyD Docker images built successfully."

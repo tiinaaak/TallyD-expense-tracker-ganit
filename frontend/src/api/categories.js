@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+const API_BASE_URL = 'http://tallyd-backend-alb-2084154047.us-east-1.elb.amazonaws.com/api';
 
 const authHeader = () => ({
   headers: { Authorization: `Token ${localStorage.getItem('authToken')}` },

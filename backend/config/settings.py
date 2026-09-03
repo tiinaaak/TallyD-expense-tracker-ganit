@@ -24,7 +24,7 @@ ALLOWED_HOSTS = ['*']
 
 # Required when accessing Django through the ECS public IP
 CSRF_TRUSTED_ORIGINS = [
-    'http://13.223.41.196:8000',
+    'http://tallyd-backend-alb-2084154047.us-east-1.elb.amazonaws.com',
 ]
 
 
