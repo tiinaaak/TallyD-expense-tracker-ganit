@@ -21,6 +21,11 @@ jobs:
           python-version: "3.12"
 
       - name: Backend checks
+        env:
+          SECRET_KEY: ci-test-secret-key
+          EMAIL_HOST_USER: ci@example.com
+          EMAIL_HOST_PASSWORD: ci-test-password
+          DEFAULT_FROM_EMAIL: ci@example.com
         run: |
           cd backend
           pip install -r requirements.txt
