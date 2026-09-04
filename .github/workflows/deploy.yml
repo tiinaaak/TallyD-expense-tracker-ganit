@@ -7,6 +7,17 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  ECR_REGISTRY: 975049960386.dkr.ecr.us-east-1.amazonaws.com
+  BACKEND_REPOSITORY: tallyd-backend
+  FRONTEND_REPOSITORY: tallyd-frontend
+  BACKEND_SERVICE: tallyd-backend-service
+  FRONTEND_SERVICE: tallyd-frontend-service
+  BACKEND_TASK_FAMILY: tallyd-backend-task
+  FRONTEND_TASK_FAMILY: tallyd-frontend-task
+  ECS_CLUSTER: tallyd-cluster
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -66,21 +77,128 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Verify AWS identity
-        run: aws sts get-caller-identity
+        run: |
+          aws sts get-caller-identity
 
       - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build backend Docker image
         run: |
-          docker build -t tallyd-backend:${{ github.sha }} ./backend
+          docker build \
+            -t $ECR_REGISTRY/$BACKEND_REPOSITORY:${{ github.sha }} \
+            ./backend
 
-      - name: Tag backend image for ECR
+      - name: Build frontend Docker image
         run: |
-          docker tag tallyd-backend:${{ github.sha }} \
-            975049960386.dkr.ecr.us-east-1.amazonaws.com/tallyd-backend:${{ github.sha }}
+          docker build \
+            -t $ECR_REGISTRY/$FRONTEND_REPOSITORY:${{ github.sha }} \
+            ./frontend
 
       - name: Push backend image to ECR
         run: |
           docker push \
-            975049960386.dkr.ecr.us-east-1.amazonaws.com/tallyd-backend:${{ github.sha }}
+            $ECR_REGISTRY/$BACKEND_REPOSITORY:${{ github.sha }}
+
+      - name: Push frontend image to ECR
+        run: |
+          docker push \
+            $ECR_REGISTRY/$FRONTEND_REPOSITORY:${{ github.sha }}
+
+      - name: Prepare backend task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "$BACKEND_TASK_FAMILY" \
+            --query taskDefinition \
+            --output json > backend-task-definition.json
+
+          jq 'del(
+            .taskDefinitionArn,
+            .revision,
+            .status,
+            .requiresAttributes,
+            .compatibilities,
+            .registeredAt,
+            .registeredBy
+          )' backend-task-definition.json > backend-task-definition-clean.json
+
+          jq \
+            --arg IMAGE "$ECR_REGISTRY/$BACKEND_REPOSITORY:${{ github.sha }}" \
+            '(.containerDefinitions[] | select(.name == "tallyd-backend") | .image) = $IMAGE' \
+            backend-task-definition-clean.json \
+            > backend-task-definition-new.json
+
+      - name: Register backend task definition
+        run: |
+          aws ecs register-task-definition \
+            --cli-input-json file://backend-task-definition-new.json \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text > backend-task-definition-arn.txt
+
+      - name: Deploy backend to ECS
+        run: |
+          BACKEND_TASK_DEFINITION=$(cat backend-task-definition-arn.txt)
+
+          aws ecs update-service \
+            --cluster "$ECS_CLUSTER" \
+            --service "$BACKEND_SERVICE" \
+            --task-definition "$BACKEND_TASK_DEFINITION"
+
+      - name: Prepare frontend task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "$FRONTEND_TASK_FAMILY" \
+            --query taskDefinition \
+            --output json > frontend-task-definition.json
+
+          jq 'del(
+            .taskDefinitionArn,
+            .revision,
+            .status,
+            .requiresAttributes,
+            .compatibilities,
+            .registeredAt,
+            .registeredBy
+          )' frontend-task-definition.json > frontend-task-definition-clean.json
+
+          jq \
+            --arg IMAGE "$ECR_REGISTRY/$FRONTEND_REPOSITORY:${{ github.sha }}" \
+            '(.containerDefinitions[] | select(.name == "tallyd-frontend") | .image) = $IMAGE' \
+            frontend-task-definition-clean.json \
+            > frontend-task-definition-new.json
+
+      - name: Register frontend task definition
+        run: |
+          aws ecs register-task-definition \
+            --cli-input-json file://frontend-task-definition-new.json \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text > frontend-task-definition-arn.txt
+
+      - name: Deploy frontend to ECS
+        run: |
+          FRONTEND_TASK_DEFINITION=$(cat frontend-task-definition-arn.txt)
+
+          aws ecs update-service \
+            --cluster "$ECS_CLUSTER" \
+            --service "$FRONTEND_SERVICE" \
+            --task-definition "$FRONTEND_TASK_DEFINITION"
+
+      - name: Wait for backend ECS service
+        run: |
+          aws ecs wait services-stable \
+            --cluster "$ECS_CLUSTER" \
+            --services "$BACKEND_SERVICE"
+
+      - name: Wait for frontend ECS service
+        run: |
+          aws ecs wait services-stable \
+            --cluster "$ECS_CLUSTER" \
+            --services "$FRONTEND_SERVICE"
+
+      - name: Verify backend health
+        run: |
+          curl --fail --show-error --silent \
+            http://tallyd-backend-alb-2084154047.us-east-1.elb.amazonaws.com/api/health/
+
+          echo
+          echo "Backend health check passed."
