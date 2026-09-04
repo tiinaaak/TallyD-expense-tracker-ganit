@@ -109,8 +109,10 @@ jobs:
         run: |
           aws ecs describe-task-definition \
             --task-definition "$BACKEND_TASK_FAMILY" \
+            --region "$AWS_REGION" \
             --query taskDefinition \
-            --output json > backend-task-definition.json
+            --output json \
+            > backend-task-definition.json
 
           jq 'del(
             .taskDefinitionArn,
@@ -120,7 +122,8 @@ jobs:
             .compatibilities,
             .registeredAt,
             .registeredBy
-          )' backend-task-definition.json > backend-task-definition-clean.json
+          )' backend-task-definition.json \
+            > backend-task-definition-clean.json
 
           jq \
             --arg IMAGE "$ECR_REGISTRY/$BACKEND_REPOSITORY:${{ github.sha }}" \
@@ -132,8 +135,10 @@ jobs:
         run: |
           aws ecs register-task-definition \
             --cli-input-json file://backend-task-definition-new.json \
+            --region "$AWS_REGION" \
             --query 'taskDefinition.taskDefinitionArn' \
-            --output text > backend-task-definition-arn.txt
+            --output text \
+            > backend-task-definition-arn.txt
 
       - name: Deploy backend to ECS
         run: |
@@ -142,14 +147,17 @@ jobs:
           aws ecs update-service \
             --cluster "$ECS_CLUSTER" \
             --service "$BACKEND_SERVICE" \
-            --task-definition "$BACKEND_TASK_DEFINITION"
+            --task-definition "$BACKEND_TASK_DEFINITION" \
+            --region "$AWS_REGION"
 
       - name: Prepare frontend task definition
         run: |
           aws ecs describe-task-definition \
             --task-definition "$FRONTEND_TASK_FAMILY" \
+            --region "$AWS_REGION" \
             --query taskDefinition \
-            --output json > frontend-task-definition.json
+            --output json \
+            > frontend-task-definition.json
 
           jq 'del(
             .taskDefinitionArn,
@@ -159,7 +167,8 @@ jobs:
             .compatibilities,
             .registeredAt,
             .registeredBy
-          )' frontend-task-definition.json > frontend-task-definition-clean.json
+          )' frontend-task-definition.json \
+            > frontend-task-definition-clean.json
 
           jq \
             --arg IMAGE "$ECR_REGISTRY/$FRONTEND_REPOSITORY:${{ github.sha }}" \
@@ -171,8 +180,10 @@ jobs:
         run: |
           aws ecs register-task-definition \
             --cli-input-json file://frontend-task-definition-new.json \
+            --region "$AWS_REGION" \
             --query 'taskDefinition.taskDefinitionArn' \
-            --output text > frontend-task-definition-arn.txt
+            --output text \
+            > frontend-task-definition-arn.txt
 
       - name: Deploy frontend to ECS
         run: |
@@ -181,19 +192,22 @@ jobs:
           aws ecs update-service \
             --cluster "$ECS_CLUSTER" \
             --service "$FRONTEND_SERVICE" \
-            --task-definition "$FRONTEND_TASK_DEFINITION"
+            --task-definition "$FRONTEND_TASK_DEFINITION" \
+            --region "$AWS_REGION"
 
       - name: Wait for backend ECS service
         run: |
           aws ecs wait services-stable \
             --cluster "$ECS_CLUSTER" \
-            --services "$BACKEND_SERVICE"
+            --services "$BACKEND_SERVICE" \
+            --region "$AWS_REGION"
 
       - name: Wait for frontend ECS service
         run: |
           aws ecs wait services-stable \
             --cluster "$ECS_CLUSTER" \
-            --services "$FRONTEND_SERVICE"
+            --services "$FRONTEND_SERVICE" \
+            --region "$AWS_REGION"
 
       - name: Verify backend health
         run: |
