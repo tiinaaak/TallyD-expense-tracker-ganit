@@ -9,8 +9,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import EmailMultiAlternatives
-from django.db.models import Count, Sum
-
+from django.db.models import Count, OuterRef, Subquery, Sum
+from expenses.models import Expense, Budget
 from .models import UserProfile, Notification
 
 from .serializers import (
@@ -396,6 +396,10 @@ class PasswordResetConfirmView(APIView):
 # ADMIN - LIST USERS
 # ============================================================
 
+# ============================================================
+# ADMIN - LIST USERS
+# ============================================================
+
 class UserListView(generics.ListAPIView):
     """
     Admin-only endpoint.
@@ -408,24 +412,38 @@ class UserListView(generics.ListAPIView):
     permission_classes = [permissions.IsAdminUser]
 
     def get_queryset(self):
+        expense_total = (
+            Expense.objects
+            .filter(user=OuterRef('pk'))
+            .values('user')
+            .annotate(total=Sum('amount'))
+            .values('total')
+        )
+
+        budget_total = (
+            Budget.objects
+            .filter(user=OuterRef('pk'))
+            .values('user')
+            .annotate(total=Sum('amount'))
+            .values('total')
+        )
+
         return (
             User.objects
             .all()
             .select_related('profile')
             .annotate(
-                expense_count=Count(
-                    'expenses',
-                    distinct=True
-                ),
-                total_spent=Sum(
-                    'expenses__amount'
-                ),
+                expense_count=Count('expenses'),
+                total_spent=Subquery(expense_total),
+                total_budget=Subquery(budget_total),
             )
             .order_by('username')
         )
 
 
 # ============================================================
+# ADMIN - CHANGE USER ROLE
+# ============================================================# ============================================================
 # ADMIN - CHANGE USER ROLE
 # ============================================================
 

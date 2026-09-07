@@ -1,7 +1,6 @@
 import re
 
 from django.contrib.auth.models import User
-from django.db.models import Sum
 
 from rest_framework import serializers
 
@@ -152,20 +151,10 @@ class UserListSerializer(
             return 'active'
 
     def get_total_expenses(self, obj):
-
-        total = obj.expenses.aggregate(
-            total=Sum('amount')
-        )['total']
-
-        return total or 0
+        return obj.total_spent or 0
 
     def get_budget(self, obj):
-
-        total = obj.budgets.aggregate(
-            total=Sum('amount')
-        )['total']
-
-        return total or 0
+        return obj.total_budget or 0
 
 
 # ============================================================
