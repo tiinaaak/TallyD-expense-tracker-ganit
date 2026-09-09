@@ -8,7 +8,7 @@ from .models import UserProfile
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
 
-    if created:
+    if created and not kwargs.get("raw", False):
         role = (
             UserProfile.ROLE_ADMIN
             if instance.is_staff
