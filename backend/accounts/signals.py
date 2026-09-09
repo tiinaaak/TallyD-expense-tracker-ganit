@@ -7,19 +7,19 @@ from .models import UserProfile
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
+    if kwargs.get("raw", False):
+        return
 
-    if created and not kwargs.get("raw", False):
+    if created:
         role = (
             UserProfile.ROLE_ADMIN
             if instance.is_staff
             else UserProfile.ROLE_USER
         )
-
         UserProfile.objects.create(
             user=instance,
             role=role
         )
-
     else:
         UserProfile.objects.get_or_create(
             user=instance
